@@ -5,7 +5,7 @@ The goal of this project is to train an agent to move a collection of 20 double-
 
 ![Reacher Environment Example](reacher.gif)
 
-A reward of +0.1 is provided for each step and for each of the hand in the target location. The aim is to keep all arms as long as possible within the target region. 
+A reward of +0.1 is provided for each step and for each of the hand in the target location. The aim is to keep all arms as long as possible within the target region. In the scope of this project the environment is considered to be solved when average total reward over 100 episodes is equal or larger than 30.
 
 ## Getting Started
 1. Download the environment from one of the links below.  You need only select the environment that matches your operating system:
