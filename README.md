@@ -23,6 +23,12 @@ A reward of +0.1 is provided for each step and for each of the hand in the targe
 
 ## Instructions
 
+Follow the instructions in `Continuous_Control.ipynb` to train and evaluate the agent.
+
+
 ## Results
+
+Results are documented in the [project report](Report.md)
+
 
 
