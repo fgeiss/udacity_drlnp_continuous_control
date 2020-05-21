@@ -13,4 +13,6 @@ To evaluate the performance of the agent we performed a baseline test at the beg
 
 ## Results
 
+![Results](learning_ddqn.png)
+
 ## Ideas on Future Work and Possible Improvements
