@@ -7,6 +7,7 @@ To evaluate the performance of the agent we performed a baseline test at the beg
 
 ## Learning Algorithm
 
+We utilized a deep deterministic policy gradient learning method for 
 
 
 ### Neural Network Architecture
