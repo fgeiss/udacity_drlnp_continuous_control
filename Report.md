@@ -9,16 +9,17 @@ To evaluate the performance of the agent we performed a baseline test at the beg
 
 We utilized a deep deterministic policy gradient learning method for solving this project. The actor and critic network arcitectures have the following shape:
 
-### Actor Network
+### Actor Network Architecture
 The actor network is a fully connected network with input layer the state size 33 then followed bz two layers of size 100 each and then followed by the output layer of the action space size. The input layer and the hidden layers are followed by a batch normalization and a relu-function, the output layer is mapped to the valid action range by a tanh-function.
 
-The full network architecture details are vizualized below with an assumed batch size of 100:
+The full network architecture details are vizualized below with an assumed batch size of 256:
 
 ![Actor Network](actor_graph.png)
 
-### Critic Network
-The critic network is a 
+### Critic Network Architecture
+The critic network is a fully connected network with two input layers: The first input layer takes the state vector to a fully connected layer with 100 nodes followed by a batch normalization and a relu-function. The result is concatenated with the action vector and forms the input to a fully connected layer with 100 nodes. This layer is followed by a relu function 
 
+The full network architecture details are vizualized below with an assumed batch size of 256:
 
 ![Critic_Network](critic_graph.png)
 
