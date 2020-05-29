@@ -20,6 +20,7 @@ A reward of +0.1 is provided for each step and for each of the hand in the targe
 
 2. Place the file in the repository folder and unzip (or decompress) the file.
 
+3. Install the required python packages: hiddenlayer, torch, tensorflow, unityagents. For a complete list of installed packages see [requirements.txt](requirements.txt). To successfully install unityagents package the author used the anaconda distribution. 
 
 ## Instructions
 
