@@ -9,7 +9,7 @@ To evaluate the performance of the agent we performed a baseline test at the beg
 
 We utilized a deep deterministic policy gradient learning method for solving this project. Lucid detailed descriptions of the algorithm can be found [here](https://spinningup.openai.com/en/latest/algorithms/ddpg.html) and [here](https://arxiv.org/pdf/1509.02971.pdf). Key idea is that an agent constitutes of two concurrent networks that are trained to achieve the goal: The critic network takes as input the state vector and the action vector and approximates the total expected reward. The actor takes as input the state vector and approximates the policy. Training is realized through TD-learning of actors and critics from batches of random samples of a replay buffer that is continuously updated with the latest training samples. The actors performance is evaluation by using the critic network.
 
-[Diagram](ddpg.png)
+![Diagram](ddpg.png)
 
 
 The following robustifications were added in order to achieve the project goal:
