@@ -9,28 +9,15 @@ import time
 import torch
 import torch.nn.functional as F
 import torch.optim as optim
-
-BUFFER_SIZE = int(1e6)  # replay buffer size
-BATCH_SIZE = 256        # minibatch size
-GAMMA = 0.99            # discount factor
-TAU = 1e-3              # for soft update of target parameters
-LR_ACTOR = 1e-3         # learning rate of the actor 
-LR_CRITIC = 1e-3        # learning rate of the critic
-WEIGHT_DECAY = 0.0      # L2 weight decay
-EPSILON_START = 1.0
-EPSILON_DECAY = 0.9995
-EPSILON_END   = 0.00001
-LEARN_EVERY = 20
-LEARN_TIMES = 10
-PRIO_ALPHA = 0.1
+from configparser import ConfigParser
 
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-class Agent():
+class Agent(object):
     """Interacts with and learns from the environment."""
     
-    def __init__(self, state_size, action_size, random_seed):
+    def __init__(self, state_size, action_size, random_seed, hyperparameters):
         """Initialize an Agent object.
         
         Params
@@ -38,28 +25,41 @@ class Agent():
             state_size (int): dimension of each state
             action_size (int): dimension of each action
             random_seed (int): random seed
+            hyperparameters (dict): dictionary with h
         """
+        
+        # initialize the random generator to ensure reproducibility
+        random.seed(random_seed)
+
+        
+        # Read hyperparameters from Config dict
+        self.hyperparamaters = hyperparameters
+        
         self.state_size = state_size
         self.action_size = action_size
-        self.seed = random.seed(random_seed)
         self.step_counter = 0
-        self.epsilon = EPSILON_START
+        self.epsilon = float(self.hyperparamaters['EPSILON_START'])
 
         # Actor Network (w/ Target Network)
         self.actor_local = Actor(state_size, action_size, random_seed).to(device)
         self.actor_target = Actor(state_size, action_size, random_seed).to(device)
-        self.actor_optimizer = optim.Adam(self.actor_local.parameters(), lr=LR_ACTOR)
+        self.actor_optimizer = optim.Adam(self.actor_local.parameters(), 
+                                          lr=float(self.hyperparamaters['LR_ACTOR']))
 
         # Critic Network (w/ Target Network)
         self.critic_local = Critic(state_size, action_size, random_seed).to(device)
         self.critic_target = Critic(state_size, action_size, random_seed).to(device)
-        self.critic_optimizer = optim.Adam(self.critic_local.parameters(), lr=LR_CRITIC, weight_decay=WEIGHT_DECAY)
+        self.critic_optimizer = optim.Adam(self.critic_local.parameters(), 
+                                           lr=float(self.hyperparamaters['LR_CRITIC']),
+                                           weight_decay=float(self.hyperparamaters['WEIGHT_DECAY']))
         
         # Noise process
-        self.noise = OUNoise(action_size, random_seed)
+        self.noise = OUNoise(action_size)
 
         # Replay memory
-        self.memory = ReplayBuffer(action_size, BUFFER_SIZE, BATCH_SIZE, random_seed)
+        self.memory = ReplayBuffer(action_size, 
+                                   int(self.hyperparamaters['BUFFER_SIZE']), 
+                                   int(self.hyperparamaters['BATCH_SIZE']))
         
         # Hard update so that weights of local and target are identical 
         self.hard_update(self.actor_target, self.actor_local)
@@ -75,11 +75,11 @@ class Agent():
         self.step_learn()
 
     def step_learn(self):
-        if self.step_counter % LEARN_EVERY == 0:
-            if len(self.memory) > BATCH_SIZE:
-                for _ in range(LEARN_TIMES):
+        if self.step_counter % int(self.hyperparamaters['LEARN_EVERY']) == 0:
+            if len(self.memory) > int(self.hyperparamaters['BATCH_SIZE']):
+                for _ in range(int(self.hyperparamaters['LEARN_TIMES'])):
                     experiences = self.memory.sample()
-                    self.learn(experiences, GAMMA)
+                    self.learn(experiences, float(self.hyperparamaters['GAMMA']))
         
             
     def act(self, state, add_noise=True):
@@ -109,7 +109,8 @@ class Agent():
         
         
     def update_epsilon(self):
-        self.epsilon = max(self.epsilon*EPSILON_DECAY,EPSILON_END)
+        self.epsilon = max(self.epsilon*float(self.hyperparamaters['EPSILON_DECAY']),
+                           float(self.hyperparamaters['EPSILON_END']))
         
     def learn(self, experiences, gamma):
         """Update policy and value parameters using given batch of experience tuples.
@@ -155,8 +156,8 @@ class Agent():
         self.actor_optimizer.step()
 
         # ----------------------- update target networks ----------------------- #
-        self.soft_update(self.critic_local, self.critic_target, TAU)
-        self.soft_update(self.actor_local, self.actor_target, TAU) 
+        self.soft_update(self.critic_local, self.critic_target, float(self.hyperparamaters['TAU']))
+        self.soft_update(self.actor_local, self.actor_target, float(self.hyperparamaters['TAU']))
         
         # ------------------------ update epsilon and noise -------------------- #
         self.update_epsilon()
@@ -184,12 +185,11 @@ class Agent():
 class OUNoise:
     """Ornstein-Uhlenbeck process."""
 
-    def __init__(self, size, seed, mu=0., theta=0.15, sigma=0.2):
+    def __init__(self, size, mu=0., theta=0.15, sigma=0.2):
         """Initialize parameters and noise process."""
         self.mu = mu * np.ones(size)
         self.theta = theta
         self.sigma = sigma
-        self.seed = random.seed(seed)
         self.reset()
 
     def reset(self):
@@ -199,14 +199,14 @@ class OUNoise:
     def sample(self):
         """Update internal state and return it as a noise sample."""
         x = self.state
-        dx = self.theta * (self.mu - x) + self.sigma * np.array([random.random() for i in range(len(x))])
+        dx = self.theta * (self.mu - x) + self.sigma * np.array([np.random.randn() for i in range(len(x))])
         self.state = x + dx
         return self.state
 
 class ReplayBuffer:
     """Fixed-size buffer to store experience tuples."""
 
-    def __init__(self, action_size, buffer_size, batch_size, seed):
+    def __init__(self, action_size, buffer_size, batch_size):
         """Initialize a ReplayBuffer object.
         Params
         ======
@@ -219,7 +219,6 @@ class ReplayBuffer:
         self.experience = namedtuple("Experience", field_names=["index", "state", "action", "reward", "next_state", "done"])
         self.td_errors = deque(maxlen=buffer_size)
         self.index = 0 #Global counter to help storing and updating td_error values
-        self.seed = random.seed(seed)
         self.prioritized_replay = False
     
     def add(self, state, action, reward, next_state, done):
